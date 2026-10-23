@@ -1,0 +1,45 @@
+services:
+  cfg1:
+    image: mongo:8.0
+    command: ["mongod", "--configsvr", "--replSet", "csrs", "--bind_ip_all", "--port", "27017"]
+    volumes: ["geosense-cfg1:/data/configdb"]
+  cfg2:
+    image: mongo:8.0
+    command: ["mongod", "--configsvr", "--replSet", "csrs", "--bind_ip_all", "--port", "27017"]
+    volumes: ["geosense-cfg2:/data/configdb"]
+  cfg3:
+    image: mongo:8.0
+    command: ["mongod", "--configsvr", "--replSet", "csrs", "--bind_ip_all", "--port", "27017"]
+    volumes: ["geosense-cfg3:/data/configdb"]
+  shard1a:
+    image: mongo:8.0
+    command: ["mongod", "--shardsvr", "--replSet", "shardrs", "--bind_ip_all", "--port", "27017"]
+    volumes: ["geosense-shard1a:/data/db"]
+  shard1b:
+    image: mongo:8.0
+    command: ["mongod", "--shardsvr", "--replSet", "shardrs", "--bind_ip_all", "--port", "27017"]
+    volumes: ["geosense-shard1b:/data/db"]
+  shard1c:
+    image: mongo:8.0
+    command: ["mongod", "--shardsvr", "--replSet", "shardrs", "--bind_ip_all", "--port", "27017"]
+    volumes: ["geosense-shard1c:/data/db"]
+  mongos:
+    image: mongo:8.0
+    command: ["mongos", "--configdb", "csrs/cfg1:27017,cfg2:27017,cfg3:27017", "--bind_ip_all", "--port", "27017"]
+    ports: ["27017:27017"]
+    depends_on: [cfg1, cfg2, cfg3, shard1a, shard1b, shard1c]
+  app:
+    build: .
+    environment:
+      MONGODB_URI: mongodb://mongos:27017
+      MONGODB_DATABASE: geosense
+      GEOSENSE_ATLAS_SEARCH: "false"
+    ports: ["8000:8000"]
+    depends_on: [mongos]
+volumes:
+  geosense-cfg1:
+  geosense-cfg2:
+  geosense-cfg3:
+  geosense-shard1a:
+  geosense-shard1b:
+  geosense-shard1c:

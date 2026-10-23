@@ -1,0 +1,22 @@
+services:
+  mongo:
+    image: mongo:8.0
+    command: ["mongod", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - geosense-local-data:/data/db
+
+  app:
+    build: .
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: geosense
+      GEOSENSE_ATLAS_SEARCH: "false"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+
+volumes:
+  geosense-local-data:

@@ -1,0 +1,28 @@
+services:
+  mongo1:
+    image: mongo:8.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports: ["27017:27017"]
+    volumes: ["geosense-rs1:/data/db"]
+  mongo2:
+    image: mongo:8.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports: ["27018:27017"]
+    volumes: ["geosense-rs2:/data/db"]
+  mongo3:
+    image: mongo:8.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    ports: ["27019:27017"]
+    volumes: ["geosense-rs3:/data/db"]
+  app:
+    build: .
+    environment:
+      MONGODB_URI: mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=rs0
+      MONGODB_DATABASE: geosense
+      GEOSENSE_ATLAS_SEARCH: "false"
+    ports: ["8000:8000"]
+    depends_on: [mongo1, mongo2, mongo3]
+volumes:
+  geosense-rs1:
+  geosense-rs2:
+  geosense-rs3:
